@@ -1,16 +1,26 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 )
 
-func Search(query string) string {
-  url := fmt.Sprintf("https://api.jikan.moe/v4/anime?sfw=true&q=%s", query);
+type Response struct {
+	Data       []Anime     `json:"data"`
+}
 
-  fmt.Println(url);
+type Anime struct {
+	Title         string   `json:"title"`
+	Type          string   `json:"type"`
+	Episodes      int      `json:"episodes"`
+	Status        string   `json:"status"`
+}
+
+func Search(query string) []Anime {
+  url := fmt.Sprintf("https://api.jikan.moe/v4/anime?sfw=true&q=%s", query);
 
   res, error := http.Get(url);
 
@@ -18,16 +28,21 @@ func Search(query string) string {
     log.Fatal(error)
   }
 
+  defer res.Body.Close()
+
   // Read the Response Body
   body, error := ioutil.ReadAll(res.Body)
-
+  
   if error != nil {
     log.Fatal(error)
-  } 
+  }
 
-  // Convert it to string 
-  stringBody := string(body); 
+  var result Response
+  if err := json.Unmarshal(body, &result); err != nil {   
+    fmt.Println(err)
+  }
+ 
+  return result.Data
 
-  return stringBody;
 }
-
+ 

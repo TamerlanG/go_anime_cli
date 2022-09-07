@@ -5,9 +5,9 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 )
 
@@ -18,7 +18,15 @@ var rootCmd = &cobra.Command{
   Run: func(cmd *cobra.Command, args []string) {
     results := Search(args[0]);
 
-    fmt.Println(results);
+    t := table.NewWriter()
+    t.SetOutputMirror(os.Stdout)
+    t.AppendHeader(table.Row{"Title", "Episodes", "Type", "Status"})
+    
+    for _, anime := range results {
+      t.AppendRow(table.Row{anime.Title, anime.Episodes, anime.Type, anime.Status})
+    } 
+  
+    t.Render()
   },
 }
 
