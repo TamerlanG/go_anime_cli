@@ -19,11 +19,27 @@ type Anime struct {
 	Status        string   `json:"status"`
 }
 
-func Search(query string) []Anime {
-  url := fmt.Sprintf("https://api.jikan.moe/v4/anime?sfw=true&q=%s", query);
+type Config struct {
+  Limit string
+}
 
-  res, error := http.Get(url);
+func Search(searchQuery string, config Config) []Anime { client := http.Client{}
+  request, error := http.NewRequest("GET", "https://api.jikan.moe/v4/anime", nil)
+  
+  query := request.URL.Query()
+  
+  query.Add("q", searchQuery)
+  query.Add("sfw", "true")
+  query.Add("limit", config.Limit)
+  
+  request.URL.RawQuery = query.Encode()
 
+  if error != nil {
+    log.Fatal(error)
+  } 
+  
+  res, error := client.Do(request)
+  
   if error != nil {
     log.Fatal(error)
   }
